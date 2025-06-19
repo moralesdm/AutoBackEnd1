@@ -2,6 +2,7 @@ package com.project.autobackend1.service.impl;
 
 import com.project.autobackend1.entity.dto.LoginRequest;
 import com.project.autobackend1.entity.dto.LoginResponse;
+import com.project.autobackend1.entity.dto.RefreshTokenRequest;
 import com.project.autobackend1.entity.dto.RegisterRequest;
 import com.project.autobackend1.entity.usuario;
 import com.project.autobackend1.repository.UsuarioRepository;
@@ -61,5 +62,22 @@ public class AuthServiceImpl implements AuthService {
         usuarioRepository.save(nuevo);
         String token = jwtUtil.generateToken(nuevo);
         return new LoginResponse(token);
+    }
+
+    @Override
+    public LoginResponse refreshToken(RefreshTokenRequest request) {
+        String email = jwtUtil.extractUsername(request.getToken());
+
+        usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Validar que el token actual aún sea válido (opcional según política)
+        if (!jwtUtil.isTokenValid(request.getToken(), usuario)) {
+            throw new RuntimeException("Token inválido o expirado");
+        }
+
+        // Generar un nuevo token JWT
+        String newToken = jwtUtil.generateToken(usuario);
+        return new LoginResponse(newToken);
     }
 }
