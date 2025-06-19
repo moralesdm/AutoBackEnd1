@@ -35,4 +35,11 @@ public class AuthController {
     authService.logout(request);
     return ResponseEntity.ok().body("Logout Sucesfull");
     }
+
+    @GetMapping("/me")
+    public UserResponse me(@RequestHeader("Authorization") String authHeader) {
+        // Extraer el token (eliminar "Bearer " si viene incluido)
+        String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
+        return authService.getProfile(token);
+    }
 }
