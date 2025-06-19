@@ -2,6 +2,7 @@ package com.project.autobackend1.controller;
 
 import com.project.autobackend1.entity.dto.LoginRequest;
 import com.project.autobackend1.entity.dto.LoginResponse;
+import com.project.autobackend1.entity.dto.RegisterRequest;
 import com.project.autobackend1.service.AuthService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,4 +19,10 @@ public class AuthController {
     public LoginResponse login(@RequestBody LoginRequest request) {
         return authService.login(request);
     }
+
+    @PostMapping("/register")
+    public LoginResponse register(@RequestBody RegisterRequest request) {
+        return authService.register(request);
+    }
+
 }
