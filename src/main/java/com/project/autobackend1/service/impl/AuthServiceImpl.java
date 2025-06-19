@@ -2,6 +2,7 @@ package com.project.autobackend1.service.impl;
 
 import com.project.autobackend1.entity.dto.LoginRequest;
 import com.project.autobackend1.entity.dto.LoginResponse;
+import com.project.autobackend1.entity.dto.RegisterRequest;
 import com.project.autobackend1.entity.usuario;
 import com.project.autobackend1.repository.UsuarioRepository;
 import com.project.autobackend1.service.AuthService;
@@ -9,6 +10,8 @@ import com.project.autobackend1.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -32,6 +35,31 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String token = jwtUtil.generateToken(usuario);
+        return new LoginResponse(token);
+    }
+
+    @Override
+    public LoginResponse register(RegisterRequest request) {
+        Optional<usuario> existente = usuarioRepository.findByEmail(request.getEmail());
+        if (existente.isPresent()) {
+            throw new RuntimeException("El correo ya está registrado.");
+        }
+
+        usuario nuevo = usuario.builder()
+                .nombre(request.getNombre())
+                .apellido(request.getApellido())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .telefono(request.getTelefono())
+                .direccion(request.getDireccion())
+                .ciudad(request.getCiudad())
+                .pais(request.getPais())
+                .rol("CLIENTE")  // o "USER", según tu lógica
+                .estado(true)
+                .build();
+
+        usuarioRepository.save(nuevo);
+        String token = jwtUtil.generateToken(nuevo);
         return new LoginResponse(token);
     }
 }
