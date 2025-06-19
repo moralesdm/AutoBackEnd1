@@ -1,12 +1,11 @@
 package com.project.autobackend1.controller;
 
-import com.project.autobackend1.entity.dto.LoginRequest;
-import com.project.autobackend1.entity.dto.LoginResponse;
-import com.project.autobackend1.entity.dto.RefreshTokenRequest;
-import com.project.autobackend1.entity.dto.RegisterRequest;
+import com.project.autobackend1.entity.dto.*;
 import com.project.autobackend1.service.AuthService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -31,4 +30,9 @@ public class AuthController {
         return authService.refreshToken(request);
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@RequestBody LogoutRequest request) {
+    authService.logout(request);
+    return ResponseEntity.ok().body("Logout Sucesfull");
+    }
 }
