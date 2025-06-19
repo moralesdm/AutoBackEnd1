@@ -90,4 +90,23 @@ public class AuthServiceImpl implements AuthService {
                 .build();
         revokedTokenRepository.save(revoked);
     }
+
+    @Override
+    public UserResponse getProfile(String token) {
+        String email = jwtUtil.extractUsername(token);
+
+        usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        return UserResponse.builder()
+                .nombre(usuario.getNombre())
+                .apellido(usuario.getApellido())
+                .email(usuario.getEmail())
+                .telefono(usuario.getTelefono())
+                .direccion(usuario.getDireccion())
+                .ciudad(usuario.getCiudad())
+                .pais(usuario.getPais())
+                .rol(usuario.getRol())
+                .build();
+    }
 }
