@@ -1,10 +1,9 @@
 package com.project.autobackend1.service.impl;
 
-import com.project.autobackend1.entity.dto.LoginRequest;
-import com.project.autobackend1.entity.dto.LoginResponse;
-import com.project.autobackend1.entity.dto.RefreshTokenRequest;
-import com.project.autobackend1.entity.dto.RegisterRequest;
+import com.project.autobackend1.entity.RevokedToken;
+import com.project.autobackend1.entity.dto.*;
 import com.project.autobackend1.entity.usuario;
+import com.project.autobackend1.repository.RevokedTokenRepository;
 import com.project.autobackend1.repository.UsuarioRepository;
 import com.project.autobackend1.service.AuthService;
 import com.project.autobackend1.utils.JwtUtil;
@@ -79,5 +78,16 @@ public class AuthServiceImpl implements AuthService {
         // Generar un nuevo token JWT
         String newToken = jwtUtil.generateToken(usuario);
         return new LoginResponse(newToken);
+    }
+
+    @Autowired
+    private RevokedTokenRepository revokedTokenRepository;
+
+    @Override
+    public void logout(LogoutRequest request) {
+        RevokedToken revoked = RevokedToken.builder()
+                .token(request.getToken())
+                .build();
+        revokedTokenRepository.save(revoked);
     }
 }
