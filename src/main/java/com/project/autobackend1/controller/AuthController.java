@@ -2,6 +2,7 @@ package com.project.autobackend1.controller;
 
 import com.project.autobackend1.entity.dto.LoginRequest;
 import com.project.autobackend1.entity.dto.LoginResponse;
+import com.project.autobackend1.entity.dto.RefreshTokenRequest;
 import com.project.autobackend1.entity.dto.RegisterRequest;
 import com.project.autobackend1.service.AuthService;
 
@@ -23,6 +24,11 @@ public class AuthController {
     @PostMapping("/register")
     public LoginResponse register(@RequestBody RegisterRequest request) {
         return authService.register(request);
+    }
+
+    @PostMapping("/refresh-token")
+    public LoginResponse refreshToken(@RequestBody RefreshTokenRequest request) {
+        return authService.refreshToken(request);
     }
 
 }
