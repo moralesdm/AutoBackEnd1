@@ -48,4 +48,10 @@ public class AuthController {
         authService.ForgotPassword(request);
         return ResponseEntity.ok("Recovery token sent (check console or email)");
     }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok("Contraseña restablecida exitosamente");
+    }
 }
