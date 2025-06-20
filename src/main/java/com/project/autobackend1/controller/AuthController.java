@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -53,5 +55,26 @@ public class AuthController {
     public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest request) {
         authService.resetPassword(request);
         return ResponseEntity.ok("Contraseña restablecida exitosamente");
+    }
+
+    @GetMapping("/")
+    public List<UserAResponse> getAllUsuarios() {
+        return authService.getAllUsuarios();
+    }
+
+    @GetMapping("/{id}")
+    public UserAResponse getUsuarioById(@PathVariable int id) {
+        return authService.getUsuarioById(id);
+    }
+
+    @PutMapping("/{id}")
+    public UserAResponse updateUsuario(@PathVariable int id, @RequestBody UsuarioUpdateRequest request) {
+        return authService.updateUsuario(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteUsuario(@PathVariable int id) {
+        authService.deleteUsuario(id);
+        return ResponseEntity.ok("Usuario eliminado correctamente");
     }
 }
