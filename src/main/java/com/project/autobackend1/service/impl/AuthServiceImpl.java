@@ -14,8 +14,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -150,5 +152,70 @@ public class AuthServiceImpl implements AuthService {
 
         // Opcional: eliminar el token después de usarlo
         resetTokenRepository.delete(resetToken);
+    }
+
+    @Override
+    public List<UserAResponse> getAllUsuarios() {
+        return usuarioRepository.findAll().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public UserAResponse getUsuarioById(int id) {
+        usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        return mapToResponse(usuario);
+    }
+
+        @Override
+    public void deleteUsuario(int id) {
+        usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        usuario.setEstado(false);
+        usuarioRepository.save(usuario);
+    }
+
+    private UserAResponse mapToResponse(usuario u) {
+        return UserAResponse.builder()
+                .id(u.getId())
+                .nombre(u.getNombre())
+                .apellido(u.getApellido())
+                .email(u.getEmail())
+                .telefono(u.getTelefono())
+                .direccion(u.getDireccion())
+                .ciudad(u.getCiudad())
+                .pais(u.getPais())
+                .rol(u.getRol())
+                .estado(u.getEstado())
+                .build();
+    }
+
+    @Override
+    public UserAResponse updateUsuario(int id, UsuarioUpdateRequest request) {
+        usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (request.getNombre() != null) {
+            usuario.setNombre(request.getNombre());
+        }
+        if (request.getApellido() != null) {
+            usuario.setApellido(request.getApellido());
+        }
+        if (request.getTelefono() != null) {
+            usuario.setTelefono(request.getTelefono());
+        }
+        if (request.getDireccion() != null) {
+            usuario.setDireccion(request.getDireccion());
+        }
+        if (request.getCiudad() != null) {
+            usuario.setCiudad(request.getCiudad());
+        }
+        if (request.getPais() != null) {
+            usuario.setPais(request.getPais());
+        }
+
+        return mapToResponse(usuarioRepository.save(usuario));
     }
 }
