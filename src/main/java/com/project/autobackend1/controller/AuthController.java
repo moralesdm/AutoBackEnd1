@@ -42,4 +42,10 @@ public class AuthController {
         String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
         return authService.getProfile(token);
     }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        authService.ForgotPassword(request);
+        return ResponseEntity.ok("Recovery token sent (check console or email)");
+    }
 }
