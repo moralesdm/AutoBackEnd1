@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -132,5 +133,22 @@ public class AuthServiceImpl implements AuthService {
 
         // Simula el envío por consola (puedes reemplazar con un envío real)
         System.out.println("🔐 Token de recuperación para " + usuario.getEmail() + ": " + token);
+    }
+
+    @Override
+    public void resetPassword(ResetPasswordRequest request) {
+        PasswordResetToken resetToken = resetTokenRepository.findByToken(request.getToken())
+                .orElseThrow(() -> new RuntimeException("Token inválido"));
+
+        if (resetToken.getExpiracion().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("El token ha expirado");
+        }
+
+        usuario usuario = resetToken.getUsuario();
+        usuario.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        usuarioRepository.save(usuario);
+
+        // Opcional: eliminar el token después de usarlo
+        resetTokenRepository.delete(resetToken);
     }
 }
