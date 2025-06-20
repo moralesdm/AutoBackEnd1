@@ -8,4 +8,5 @@ public interface AuthService {
     LoginResponse refreshToken(RefreshTokenRequest request);
     void logout(LogoutRequest request);
     UserResponse getProfile(String token);
+    void ForgotPassword(ForgotPasswordRequest request);
 }

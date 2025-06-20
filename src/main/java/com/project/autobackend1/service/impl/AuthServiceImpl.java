@@ -1,8 +1,10 @@
 package com.project.autobackend1.service.impl;
 
+import com.project.autobackend1.entity.PasswordResetToken;
 import com.project.autobackend1.entity.RevokedToken;
 import com.project.autobackend1.entity.dto.*;
 import com.project.autobackend1.entity.usuario;
+import com.project.autobackend1.repository.PasswordResetTokenRepository;
 import com.project.autobackend1.repository.RevokedTokenRepository;
 import com.project.autobackend1.repository.UsuarioRepository;
 import com.project.autobackend1.service.AuthService;
@@ -12,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -108,5 +111,26 @@ public class AuthServiceImpl implements AuthService {
                 .pais(usuario.getPais())
                 .rol(usuario.getRol())
                 .build();
+    }
+
+    @Autowired
+    private PasswordResetTokenRepository resetTokenRepository;
+
+    @Override
+    public void ForgotPassword(ForgotPasswordRequest request) {
+        usuario usuario = usuarioRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        String token = UUID.randomUUID().toString();
+
+        PasswordResetToken resetToken = PasswordResetToken.builder()
+                .token(token)
+                .usuario(usuario)
+                .build();
+
+        resetTokenRepository.save(resetToken);
+
+        // Simula el envío por consola (puedes reemplazar con un envío real)
+        System.out.println("🔐 Token de recuperación para " + usuario.getEmail() + ": " + token);
     }
 }
