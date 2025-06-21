@@ -218,4 +218,20 @@ public class AuthServiceImpl implements AuthService {
 
         return mapToResponse(usuarioRepository.save(usuario));
     }
+
+    @Override
+    public void activarUsuario(int id) {
+        usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (usuario.getEstado()==true) {
+            throw new RuntimeException("El usuario ya está activo");
+        }
+
+        usuario.setEstado(true);
+        usuarioRepository.save(usuario);
+    }
+
+
+
 }

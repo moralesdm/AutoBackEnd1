@@ -14,8 +14,7 @@ public interface AuthService {
     void resetPassword(ResetPasswordRequest request);
     List<UserAResponse> getAllUsuarios();
     UserAResponse getUsuarioById(int id);
-
     UserAResponse updateUsuario(int id, UsuarioUpdateRequest request);
-
     void deleteUsuario(int id);
+    void activarUsuario(int id);
 }
