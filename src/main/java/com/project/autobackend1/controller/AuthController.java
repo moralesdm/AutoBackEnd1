@@ -77,4 +77,10 @@ public class AuthController {
         authService.deleteUsuario(id);
         return ResponseEntity.ok("Usuario eliminado correctamente");
     }
+
+    @PutMapping("/activar/{id}")
+    public ResponseEntity<String> activarUsuario(@PathVariable int id) {
+        authService.activarUsuario(id);
+        return ResponseEntity.ok("Usuario activado correctamente");
+    }
 }
