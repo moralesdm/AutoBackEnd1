@@ -77,7 +77,7 @@ jobs:
             echo "DBURL=${{ secrets.DBURL }}" >> $ENV_PATH
             echo "DBUSERNAME=${{ secrets.DBUSERNAME }}" >> $ENV_PATH
             echo "DBPASS=${{ secrets.DBPASS }}" >> $ENV_PATH
-            echo "JPADLL=${{ secrets.HIBERNAJPADLLTE_DDL_AUTO }}" >> $ENV_PATH
+            echo "JPADLL=${{ secrets.JPADLL }}" >> $ENV_PATH
             echo "JPASQL=${{ secrets.JPASQL }}" >> $ENV_PATH
             echo "JPADIALECT=${{ secrets.JPADIALECT }}" >> $ENV_PATH
 
