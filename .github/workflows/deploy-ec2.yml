@@ -1,0 +1,113 @@
+name: Docker Image CI/CD for autobackend1 Service
+
+on:
+  push:
+    branches: [ "dev" ]
+  pull_request:
+    branches:
+      - "main"
+
+jobs:
+  deploy-to-ec2:
+    name: Build, Push Docker Image and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Build .jar file (Skip tests)
+        run: mvn clean install -DskipTests
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        run: |
+          docker build . --file Dockerfile \
+            --tag ${{ secrets.DOCKER_USERNAME }}/autobackend1:${{ github.run_number }} \
+            --tag ${{ secrets.DOCKER_USERNAME }}/autobackend1:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/autobackend1:${{ github.run_number }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/autobackend1:latest
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.EC2_HOST_AUTOBACKEND1 }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            # Instalar Docker si no está presente
+            if ! command -v docker &> /dev/null; then
+              echo "==> Installing Docker on Ubuntu"
+              sudo apt-get update -y
+              sudo apt-get install -y ca-certificates curl gnupg lsb-release
+              sudo mkdir -p /etc/apt/keyrings
+              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+              echo \
+                "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+                $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+              sudo apt-get update -y
+              sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+              sudo systemctl start docker
+            fi
+
+            # Crear archivo .env temporal
+            ENV_PATH=~/autobackend1-service.env
+            echo "NAME_APP=${{ secrets.NAME_APP }}" > $ENV_PATH
+            echo "PORT=${{ secrets.PORT }}" >> $ENV_PATH
+            echo "DBURL=${{ secrets.DBURL }}" >> $ENV_PATH
+            echo "DBUSERNAME=${{ secrets.DBUSERNAME }}" >> $ENV_PATH
+            echo "DBPASS=${{ secrets.DBPASS }}" >> $ENV_PATH
+            echo "JPADLL=${{ secrets.HIBERNAJPADLLTE_DDL_AUTO }}" >> $ENV_PATH
+            echo "JPASQL=${{ secrets.JPASQL }}" >> $ENV_PATH
+            echo "JPADIALECT=${{ secrets.JPADIALECT }}" >> $ENV_PATH
+
+            # Eliminar imágenes viejas sin contenedor
+            sudo docker image prune -f
+
+            # Pull de imagen
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/autobackend1:latest
+
+            # Detener contenedor anterior si existe
+            if [ $(sudo docker ps -aq -f name=autobackend1-service) ]; then
+              echo "==> Stopping and removing existing container"
+              sudo docker stop autobackend1-service
+              sudo docker rm autobackend1-service
+            fi
+
+            # Ejecutar nuevo contenedor
+            echo "==> Starting new container"
+            sudo docker run -d --name autobackend1-service \
+              --env-file $ENV_PATH \
+              -p 80:${{ secrets.SERVER_PORT_autobackend1 }} \
+              --restart unless-stopped \
+              ${{ secrets.DOCKER_USERNAME }}/autobackend1:latest
+
+            # Verificar contenedor
+            if sudo docker ps -f name=autobackend1-service | grep autobackend1-service; then
+              echo "✅ Container started successfully"
+              rm -f $ENV_PATH
+            else
+              echo "❌ Failed to start the container"
+              rm -f $ENV_PATH
+              exit 1
+            fi
