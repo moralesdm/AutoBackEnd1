@@ -98,7 +98,7 @@ jobs:
             echo "==> Starting new container"
             sudo docker run -d --name autobackend1-service \
               --env-file $ENV_PATH \
-              -p 80:${{ secrets.PORT }} \
+              -p ${{ secrets.PORT }}:${{ secrets.PORT }} \
               --restart unless-stopped \
               ${{ secrets.DOCKER_USERNAME }}/autobackend1:latest
 
